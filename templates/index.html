@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ecoalerta - Reporte de Problemas Ambientales</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        /* Imagen de fondo */
-        body {
+ body {
             font-family: Arial, sans-serif;
-            background-image: url('{{ url_for("static", filename="fondo.jpg") }}'); /* Ruta correcta de la imagen */
-            background-size: cover; /* Asegura que la imagen cubra toda la pantalla */
-            background-position: center; /* Centra la imagen */
+            background-image: url('{{ url_for("static", filename="fondo.jpg") }}');
+            background-size: cover;
+            background-position: center;
             margin: 0;
             padding: 0;
             color: #333;
@@ -20,11 +21,12 @@
             width: 90%;
             max-width: 700px;
             margin: 20px auto;
-            background-color: rgba(255, 255, 255, 0.8); /* Fondo blanco semitransparente para contraste */
+            background-color: rgba(255, 255, 255, 0.8);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+
         h1 {
             background-color: #4CAF50;
             color: white;
@@ -33,13 +35,16 @@
             text-align: center;
             margin-bottom: 20px;
         }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         label {
             font-size: 1.1em;
             font-weight: bold;
         }
+
         input[type="text"], textarea {
             width: 100%;
             padding: 10px;
@@ -48,9 +53,11 @@
             border: 1px solid #ddd;
             font-size: 1em;
         }
+
         textarea {
             resize: vertical;
         }
+
         button {
             background-color: #4CAF50;
             color: white;
@@ -62,29 +69,36 @@
             width: 100%;
             margin-top: 10px;
         }
+
         button:hover {
             background-color: #45a049;
         }
+
         .message {
             text-align: center;
             margin-top: 20px;
         }
+
         .success {
             color: green;
             font-size: 1.2em;
         }
+
         .error {
             color: red;
             font-size: 1.2em;
         }
+
         .report-section {
             margin-top: 40px;
         }
+
         .report-section h2 {
             text-align: center;
             font-size: 1.6em;
             color: #4CAF50;
         }
+
         .report {
             background-color: #f9f9f9;
             padding: 15px;
@@ -93,19 +107,76 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .report .date {
             font-size: 0.9em;
             color: #666;
         }
+
         .report .location {
             font-weight: bold;
             font-size: 1.1em;
             color: #333;
         }
+
         .report .description {
             font-size: 1em;
             color: #555;
         }
+
+        .map-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        #show-map, #emergency-button {
+            padding: 10px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+        }
+
+        /* Botón de mapa a la izquierda */
+        #show-map {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+        }
+
+        /* Botón de emergencia a la derecha */
+        #emergency-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        #map {
+            margin-top: 60px;
+            width: 100%;
+            height: 400px;
+            display: none;
+        }
+
+        #emergency-form {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .emergency-form-group {
+            margin-bottom: 20px;
+        }
+
     </style>
 </head>
 <body>
@@ -120,7 +191,7 @@
         <form id="report-form" onsubmit="return agregarReporte(event)">
             <div class="form-group">
                 <label for="ubicacion">Ubicación del Problema:</label>
-                <input type="text" id="ubicacion" name="ubicacion" placeholder="Ej. Parque Central, Río Amazonas" required>
+                <input type="text" id="ubicacion" name="ubicacion" placeholder="Ej. Parque Central, Río Amazonas" required readonly>
             </div>
 
             <div class="form-group">
@@ -136,41 +207,173 @@
             <h2>Reportes Registrados</h2>
             <div id="report-list"></div>
         </div>
+
+        <!-- Formulario de Emergencia -->
+        <div id="emergency-form">
+            <h2>Formulario de Emergencia</h2>
+            <form onsubmit="return registrarEmergencia(event)">
+                <div class="emergency-form-group">
+                    <label for="ubicacion-emergencia">Ubicación de Emergencia:</label>
+                    <input type="text" id="ubicacion-emergencia" name="ubicacion-emergencia" required readonly>
+                </div>
+                <div class="emergency-form-group">
+                    <label for="nombre-completo">Nombre Completo:</label>
+                    <input type="text" id="nombre-completo" name="nombre-completo" required>
+                </div>
+                <div class="emergency-form-group">
+                    <label for="dni">DNI:</label>
+                    <input type="text" id="dni" name="dni" required>
+                </div>
+                <div class="emergency-form-group">
+                    <label for="telefono">Teléfono:</label>
+                    <input type="text" id="telefono" name="telefono" required>
+                </div>
+                <div class="emergency-form-group">
+                    <label for="descripcion-emergencia">Descripción de la Emergencia:</label>
+                    <textarea id="descripcion-emergencia" name="descripcion-emergencia" rows="4" required></textarea>
+                </div>
+                <button type="submit">Registrar Emergencia</button>
+            </form>
+        </div>
     </div>
 
-    <script>
-        // Función para agregar el reporte y mostrarlo en la página
-        function agregarReporte(event) {
-            event.preventDefault();  // Evitar que el formulario se envíe
+    <div class="map-container">
+        <button id="show-map">🗺️</button>
+        <button id="emergency-button">⚠️ </button>
+    </div>
 
-            // Obtener los valores del formulario
-            const ubicacion = document.getElementById("ubicacion").value;
-            const descripcion = document.getElementById("descripcion").value;
+    <div id="map"></div>
 
-            // Obtener la fecha actual
-            const fecha = new Date().toLocaleString();
+<script>
+    // Variables para almacenar el mapa y el marcador
+    let map, marker;
 
-            // Crear un nuevo reporte
-            const reporteHTML = `
-                <div class="report">
-                    <div class="date">Fecha: ${fecha}</div>
-                    <div class="location">Ubicación: ${ubicacion}</div>
-                    <div class="description">Descripción: ${descripcion}</div>
-                </div>
-            `;
+    // Función para agregar el reporte y mostrarlo en la página
+    function agregarReporte(event) {
+        event.preventDefault();  // Evitar que el formulario se envíe
 
-            // Agregar el nuevo reporte a la lista
-            document.getElementById("report-list").innerHTML += reporteHTML;
+        // Obtener los valores del formulario
+        const ubicacion = document.getElementById("ubicacion").value;
+        const descripcion = document.getElementById("descripcion").value;
 
-            // Limpiar el formulario
-            document.getElementById("ubicacion").value = "";
-            document.getElementById("descripcion").value = "";
+        // Obtener la fecha actual
+        const fecha = new Date().toLocaleString();
 
-            // Mostrar mensaje de éxito
-            const messageContainer = document.getElementById("message-container");
-            messageContainer.innerHTML = `<div class="message success">Reporte agregado exitosamente!</div>`;
+        // Crear un nuevo reporte
+        const reporteHTML = `
+            <div class="report">
+                <div class="date">Fecha: ${fecha}</div>
+                <div class="location">Ubicación: ${ubicacion}</div>
+                <div class="description">Descripción: ${descripcion}</div>
+            </div>
+        `;
+
+        // Agregar el nuevo reporte a la lista
+        document.getElementById("report-list").innerHTML += reporteHTML;
+
+        // Limpiar el formulario
+        document.getElementById("ubicacion").value = "";
+        document.getElementById("descripcion").value = "";
+
+        // Mostrar mensaje de éxito
+        const messageContainer = document.getElementById("message-container");
+        messageContainer.innerHTML = `<div class="message success">Reporte agregado exitosamente!</div>`;
+    }
+
+    // Función para mostrar el formulario de emergencia
+    document.getElementById("emergency-button").addEventListener("click", function () {
+        const reportForm = document.getElementById("report-form");
+        const emergencyForm = document.getElementById("emergency-form");
+
+        // Alternar entre mostrar y ocultar el formulario de emergencia
+        if (emergencyForm.style.display === "none" || emergencyForm.style.display === "") {
+            reportForm.style.display = "none";  // Ocultar el formulario de reporte
+            emergencyForm.style.display = "block";  // Mostrar el formulario de emergencia
+        } else {
+            emergencyForm.style.display = "none";  // Ocultar el formulario de emergencia
+            reportForm.style.display = "block";  // Mostrar el formulario de reporte
         }
-    </script>
+    });
+
+    // Función para registrar la emergencia y mostrar el agradecimiento
+    function registrarEmergencia(event) {
+        event.preventDefault();  // Evitar que el formulario se envíe
+
+        // Obtener los valores del formulario de emergencia
+        const ubicacionEmergencia = document.getElementById("ubicacion-emergencia").value;
+        const nombre = document.getElementById("nombre-completo").value;
+        const dni = document.getElementById("dni").value;
+        const telefono = document.getElementById("telefono").value;
+        const descripcionEmergencia = document.getElementById("descripcion-emergencia").value;
+
+        // Mostrar mensaje de agradecimiento
+        const messageContainer = document.getElementById("message-container");
+        messageContainer.innerHTML = `<div class="message success">¡Gracias! Su emergencia ha sido registrada.</div>`;
+
+        // Limpiar el formulario
+        document.getElementById("ubicacion-emergencia").value = "";
+        document.getElementById("nombre-completo").value = "";
+        document.getElementById("dni").value = "";
+        document.getElementById("telefono").value = "";
+        document.getElementById("descripcion-emergencia").value = "";
+    }
+
+    // Función para mostrar el mapa y configurar el marcador
+    document.getElementById("show-map").addEventListener("click", function () {
+        const mapDiv = document.getElementById("map");
+
+        if (mapDiv.style.display === "block") {
+            mapDiv.style.display = "none";
+        } else {
+            mapDiv.style.display = "block";
+
+            if (!map) {
+                map = L.map("map").setView([-12.0464, -77.0428], 13);
+
+                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                marker = L.marker([-12.0464, -77.0428], { draggable: true }).addTo(map);
+                marker.bindPopup("Ubicación inicial").openPopup();
+
+                // Función de geocodificación inversa para obtener la dirección
+                function obtenerDireccion(lat, lng) {
+                    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
+
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && data.address) {
+                                const direccion = `${data.address.road || ''}, ${data.address.city || ''}, ${data.address.country || ''}`;
+                                document.getElementById("ubicacion").value = direccion;
+                                document.getElementById("ubicacion-emergencia").value = direccion;
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error al obtener la dirección:', err);
+                        });
+                }
+
+                // Actualizar la dirección al mover el marcador
+                marker.on('dragend', function () {
+                    const lat = marker.getLatLng().lat;
+                    const lng = marker.getLatLng().lng;
+                    obtenerDireccion(lat, lng);  // Obtener dirección desde las coordenadas
+                });
+
+                // Colocar un marcador al hacer clic en el mapa
+                map.on('click', function (e) {
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+                    marker.setLatLng([lat, lng]);
+                    obtenerDireccion(lat, lng);  // Obtener dirección del lugar
+                });
+            }
+        }
+    });
+</script>
+
 
 </body>
 </html>
