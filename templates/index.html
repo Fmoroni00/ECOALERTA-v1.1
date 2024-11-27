@@ -176,6 +176,14 @@
         .emergency-form-group {
             margin-bottom: 20px;
         }
+/* Inicialmente, mostrar los reportes y ocultar el formulario de emergencia */
+#report-list {
+    display: block;  /* Los reportes se muestran por defecto */
+}
+
+#emergency-form {
+    display: none;   /* El formulario de emergencia está oculto por defecto */
+}
 
     </style>
 </head>
@@ -220,14 +228,14 @@
                     <label for="nombre-completo">Nombre Completo:</label>
                     <input type="text" id="nombre-completo" name="nombre-completo" required>
                 </div>
-                <div class="emergency-form-group">
+                <div class="form-group">
                     <label for="dni">DNI:</label>
-                    <input type="number" id="dni" name="dni" required>
+                    <input type="text" id="dni" name="dni" maxlength="8" pattern="[0-9]{8}" title="El DNI debe tener 8 dígitos numéricos" required>
                 </div>
-                <div class="emergency-form-group">
+                <div class="form-group">
                     <label for="telefono">Teléfono:</label>
-                    <input type="number" id="telefono" name="telefono" required>
-                </div>
+                    <input type="text" id="telefono" name="telefono" maxlength="9" pattern="[0-9]{9}" title="El teléfono debe tener 9 dígitos numéricos" required>
+                </div>                
                 <div class="emergency-form-group">
                     <label for="descripcion-emergencia">Descripción de la Emergencia:</label>
                     <textarea id="descripcion-emergencia" name="descripcion-emergencia" rows="4" required></textarea>
@@ -278,7 +286,11 @@
         // Mostrar mensaje de éxito
         const messageContainer = document.getElementById("message-container");
         messageContainer.innerHTML = `<div class="message success">Reporte agregado exitosamente!</div>`;
-    }
+// Hacer que el mensaje desaparezca después de 10 segundos
+setTimeout(() => {
+        messageContainer.innerHTML = '';  // Limpiar el mensaje
+    }, 5000);  // 10000 milisegundos = 10 segundos
+}
 
     // Función para mostrar el formulario de emergencia
     document.getElementById("emergency-button").addEventListener("click", function () {
@@ -294,6 +306,20 @@
             reportForm.style.display = "block";  // Mostrar el formulario de reporte
         }
     });
+    document.getElementById("emergency-button").addEventListener("click", function () {
+    const reportSection = document.getElementById("report-list");
+    const emergencyForm = document.getElementById("emergency-form");
+
+    // Alternar la visibilidad de los reportes y el formulario de emergencia
+    if (reportSection.style.display === "none") {
+        reportSection.style.display = "block";  // Mostrar los reportes
+        emergencyForm.style.display = "none";  // Ocultar el formulario de emergencia
+    } else {
+        reportSection.style.display = "none";  // Ocultar los reportes
+        emergencyForm.style.display = "block"; // Mostrar el formulario de emergencia
+    }
+});
+
 
     // Función para registrar la emergencia y mostrar el agradecimiento
     function registrarEmergencia(event) {
@@ -309,6 +335,10 @@
         // Mostrar mensaje de agradecimiento
         const messageContainer = document.getElementById("message-container");
         messageContainer.innerHTML = `<div class="message success">¡Gracias! Su emergencia ha sido registrada.</div>`;
+// Hacer que el mensaje desaparezca después de 10 segundos
+setTimeout(() => {
+        messageContainer.innerHTML = '';  // Limpiar el mensaje
+    }, 5000);  // 10000 milisegundos = 10 segundos
 
         // Limpiar el formulario
         document.getElementById("ubicacion-emergencia").value = "";
@@ -372,6 +402,7 @@
             }
         }
     });
+
 </script>
 
 
