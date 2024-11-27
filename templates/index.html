@@ -184,6 +184,9 @@
 #emergency-form {
     display: none;   /* El formulario de emergencia está oculto por defecto */
 }
+#report-title {
+    display: block; /* El título se muestra inicialmente */
+}
 
     </style>
 </head>
@@ -212,8 +215,8 @@
 
         <!-- Sección de Reportes Registrados -->
         <div class="report-section">
-            <h2>Reportes Registrados</h2>
-            <div id="report-list"></div>
+            <h2 id="report-title">Reportes Registrados</h2> <!-- Título con id único -->
+            <div id="report-list"></div> <!-- Lista de reportes -->
         </div>
 
         <!-- Formulario de Emergencia -->
@@ -291,62 +294,57 @@ setTimeout(() => {
         messageContainer.innerHTML = '';  // Limpiar el mensaje
     }, 5000);  // 10000 milisegundos = 10 segundos
 }
+// Función para alternar entre el formulario de emergencia y los reportes
+document.getElementById("emergency-button").addEventListener("click", function () {
+    const reportForm = document.getElementById("report-form");  // Formulario de reportes
+    const emergencyForm = document.getElementById("emergency-form");  // Formulario de emergencia
+    const reportTitle = document.getElementById("report-title");  // Título de reportes
+    const reportList = document.getElementById("report-list");  // Lista de reportes
 
-    // Función para mostrar el formulario de emergencia
-    document.getElementById("emergency-button").addEventListener("click", function () {
-        const reportForm = document.getElementById("report-form");
-        const emergencyForm = document.getElementById("emergency-form");
-
-        // Alternar entre mostrar y ocultar el formulario de emergencia
-        if (emergencyForm.style.display === "none" || emergencyForm.style.display === "") {
-            reportForm.style.display = "none";  // Ocultar el formulario de reporte
-            emergencyForm.style.display = "block";  // Mostrar el formulario de emergencia
-        } else {
-            emergencyForm.style.display = "none";  // Ocultar el formulario de emergencia
-            reportForm.style.display = "block";  // Mostrar el formulario de reporte
-        }
-    });
-    document.getElementById("emergency-button").addEventListener("click", function () {
-    const reportSection = document.getElementById("report-list");
-    const emergencyForm = document.getElementById("emergency-form");
-
-    // Alternar la visibilidad de los reportes y el formulario de emergencia
-    if (reportSection.style.display === "none") {
-        reportSection.style.display = "block";  // Mostrar los reportes
-        emergencyForm.style.display = "none";  // Ocultar el formulario de emergencia
+    // Alternar visibilidad de los elementos
+    if (emergencyForm.style.display === "none" || emergencyForm.style.display === "") {
+        // Mostrar formulario de emergencia, ocultar reportes
+        emergencyForm.style.display = "block";
+        reportForm.style.display = "none";
+        reportTitle.style.display = "none";
+        reportList.style.display = "none";
     } else {
-        reportSection.style.display = "none";  // Ocultar los reportes
-        emergencyForm.style.display = "block"; // Mostrar el formulario de emergencia
+        // Mostrar reportes, ocultar formulario de emergencia
+        emergencyForm.style.display = "none";
+        reportForm.style.display = "block";
+        reportTitle.style.display = "block";
+        reportList.style.display = "block";
     }
 });
 
+// Función para registrar la emergencia y mostrar el agradecimiento
+function registrarEmergencia(event) {
+    event.preventDefault();  // Evitar que el formulario se envíe
 
-    // Función para registrar la emergencia y mostrar el agradecimiento
-    function registrarEmergencia(event) {
-        event.preventDefault();  // Evitar que el formulario se envíe
+    // Obtener los valores del formulario de emergencia
+    const ubicacionEmergencia = document.getElementById("ubicacion-emergencia").value;
+    const nombre = document.getElementById("nombre-completo").value;
+    const dni = document.getElementById("dni").value;
+    const telefono = document.getElementById("telefono").value;
+    const descripcionEmergencia = document.getElementById("descripcion-emergencia").value;
 
-        // Obtener los valores del formulario de emergencia
-        const ubicacionEmergencia = document.getElementById("ubicacion-emergencia").value;
-        const nombre = document.getElementById("nombre-completo").value;
-        const dni = document.getElementById("dni").value;
-        const telefono = document.getElementById("telefono").value;
-        const descripcionEmergencia = document.getElementById("descripcion-emergencia").value;
+    // Mostrar mensaje de agradecimiento
+    const messageContainer = document.getElementById("message-container");
+    messageContainer.innerHTML = `<div class="message success">¡Gracias! Su emergencia ha sido registrada.</div>`;
 
-        // Mostrar mensaje de agradecimiento
-        const messageContainer = document.getElementById("message-container");
-        messageContainer.innerHTML = `<div class="message success">¡Gracias! Su emergencia ha sido registrada.</div>`;
-// Hacer que el mensaje desaparezca después de 10 segundos
-setTimeout(() => {
+    // Hacer que el mensaje desaparezca después de 10 segundos
+    setTimeout(() => {
         messageContainer.innerHTML = '';  // Limpiar el mensaje
-    }, 5000);  // 10000 milisegundos = 10 segundos
+    }, 5000);
 
-        // Limpiar el formulario
-        document.getElementById("ubicacion-emergencia").value = "";
-        document.getElementById("nombre-completo").value = "";
-        document.getElementById("dni").value = "";
-        document.getElementById("telefono").value = "";
-        document.getElementById("descripcion-emergencia").value = "";
-    }
+    // Limpiar el formulario
+    document.getElementById("ubicacion-emergencia").value = "";
+    document.getElementById("nombre-completo").value = "";
+    document.getElementById("dni").value = "";
+    document.getElementById("telefono").value = "";
+    document.getElementById("descripcion-emergencia").value = "";
+}
+
 
     // Función para mostrar el mapa y configurar el marcador
     document.getElementById("show-map").addEventListener("click", function () {
